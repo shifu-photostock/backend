@@ -5,6 +5,9 @@ const app = express();
 const server = require('http').Server(app);
 const bodyParser = require('body-parser');
 const path = require('path');
+const cors = require('cors');
+
+app.use(cors());
 
 
 app.set('views', path.join(__dirname, './views'));
