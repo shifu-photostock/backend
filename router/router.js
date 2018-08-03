@@ -28,6 +28,8 @@ const storage = new GridFsStorage({
                 }
                 const filename = buf.toString('hex') + path.extname(file.originalname);
                 const fileInfo = {
+                    metadata: {
+                        orName: file.originalname},
                     filename: filename,
                     bucketName: 'uploads'
                 };
@@ -73,6 +75,30 @@ module.exports = (app) => {
                     }
                 });
                 res.render('index', { files: files });
+            }
+        });
+    });
+
+    app.get('/carousel/:id', (req, res) => {
+        let offsetNum = req.params.id;
+        console.log(offsetNum);
+        let offset = offsetNum * 5;
+        gfs.files.find().skip(offset).limit(5).toArray((err, files) => {
+            console.log(files);
+            if (!files || files.length === 0) {
+                res.render('index', { files: false });
+            } else {
+                files.map(file => {
+                    if (
+                        file.contentType === 'image/jpeg' ||
+                        file.contentType === 'image/png'
+                    ) {
+                        file.isImage = true;
+                    } else {
+                        file.isImage = false;
+                    }
+                });
+                res.send({ files: files });
             }
         });
     });
