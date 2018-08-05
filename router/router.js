@@ -86,15 +86,45 @@ module.exports = (app, passport) => {
         res.send(req.user);
     })
 
-    app.get('/carousel/:id', (req, res) => {
+    app.get('/carousel/:num', (req, res) => {
         let q = url.parse(req.url, true);
-        let offsetNum = req.params.id;
+        let offsetNum = req.params.num;
         let offset = offsetNum * 5;
         let limit = 5;
         if (q.query.value) {
             limit = Number(q.query.value);
         }
         gfs.files.find().skip(offset).limit(limit).toArray((err, files) => {
+            console.log(files);
+            if (!files || files.length === 0) {
+                res.sendStatus(404);
+            } else {
+                files.map(file => {
+                    if (
+                        file.contentType === 'image/jpeg' ||
+                        file.contentType === 'image/png'
+                    ) {
+                        file.isImage = true;
+                    } else {
+                        file.isImage = false;
+                    }
+                });
+                res.send({ files: files });
+            }
+        });
+    });
+
+    app.get('/profile/:id/carousel/:num', (req, res) => {
+        let q = url.parse(req.url, true);
+        let offsetNum = req.params.num;
+        let offset = offsetNum * 5;
+        let limit = 5;
+        if (q.query.value) {
+            limit = Number(q.query.value);
+        }
+        gfs.files.find({
+            'metadata.author': req.params.id
+        }).skip(offset).limit(limit).toArray((err, files) => {
             console.log(files);
             if (!files || files.length === 0) {
                 res.sendStatus(404);
