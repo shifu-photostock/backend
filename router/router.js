@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 const path = require('path');
 const url = require('url');
+const UsersModel = require('../models/users.model');
 
 //////////////////
 //DATABASE SETUP//
@@ -30,7 +31,8 @@ const storage = new GridFsStorage({
                 const filename = buf.toString('hex') + path.extname(file.originalname);
                 const fileInfo = {
                     metadata: {
-                        orName: file.originalname},
+                        orName: file.originalname,
+                        author: req.user.id},
                     filename: filename,
                     bucketName: 'uploads'
                 };
@@ -57,28 +59,32 @@ const Grid = require('gridfs-stream');
 //API ROUTES//
 //////////////
 
-module.exports = (app) => {
+module.exports = (app, passport) => {
+
+    // app.get('/', (req, res) => {
+    //     gfs.files.find().toArray((err, files) => {
+    //
+    //         if (!files || files.length === 0) {
+    //             res.render('index', { files: false });
+    //         } else {
+    //             files.map(file => {
+    //                 if (
+    //                     file.contentType === 'image/jpeg' ||
+    //                     file.contentType === 'image/png'
+    //                 ) {
+    //                     file.isImage = true;
+    //                 } else {
+    //                     file.isImage = false;
+    //                 }
+    //             });
+    //             res.render('index', { files: files });
+    //         }
+    //     });
+    // });
 
     app.get('/', (req, res) => {
-        gfs.files.find().toArray((err, files) => {
-
-            if (!files || files.length === 0) {
-                res.render('index', { files: false });
-            } else {
-                files.map(file => {
-                    if (
-                        file.contentType === 'image/jpeg' ||
-                        file.contentType === 'image/png'
-                    ) {
-                        file.isImage = true;
-                    } else {
-                        file.isImage = false;
-                    }
-                });
-                res.render('index', { files: files });
-            }
-        });
-    });
+        res.send(req.user);
+    })
 
     app.get('/carousel/:id', (req, res) => {
         let q = url.parse(req.url, true);
@@ -127,7 +133,7 @@ module.exports = (app) => {
     });
 
 
-    app.post('/upload', upload.single('file'), (req, res) => {
+    app.post('/upload', isLoggedIn, upload.single('file'), (req, res) => {
         res.json({ file: req.file });
         // res.redirect('/');
     });
@@ -152,6 +158,38 @@ module.exports = (app) => {
         });
     });
 
+    app.get('/getallusers', async (req, res) => {
+            let users = await UsersModel.find().lean().exec();
+            res.send(users);
+        }
+    );
+
+    app.get('/profile/:id', async (req, res) => {
+        let user = await UsersModel.find({_id: req.params.id}).lean().exec();
+        res.send(user);
+    });
+
+    app.get('/profile/:id/getallimages', (req, res) => {
+        console.log(req.params.id);
+        gfs.files.find(
+            {'metadata.author': req.params.id}
+            ).toArray((err, files) => {
+
+            if (!files || files.length === 0) {
+                res.render('index', { files: false });
+            } else {
+                files.map(file => {
+                    if (file.contentType === 'image/jpeg' || 'image/png') {
+                        file.isImage = true;
+                    } else {
+                        file.isImage = false;
+                    }
+                });
+                res.send({ files: files });
+            }
+        });
+    });
+
     app.delete('/files/:id', (req, res) => {
         gfs.remove({ _id: req.params.id, root: 'uploads' }, (err, gridStore) => {
             if (err) {
@@ -161,4 +199,29 @@ module.exports = (app) => {
             res.redirect('/');
         });
     });
+
+    app.post('/login', passport.authenticate('local-login'),
+        function (req, res) {
+            res.send({user: req.user});
+        });
+
+
+    app.post('/register', passport.authenticate('local-signup'),
+        function (req, res) {
+            res.send({user: req.user});
+        });
+
+
+    app.post('/logout', (req, res) => {
+        req.session.destroy(function (err) {
+            res.redirect('/'); //Inside a callback… bulletproof!
+        })
+    });
 };
+
+function isLoggedIn(req, res, next) {
+    if (req.isAuthenticated())
+        return next();
+
+    res.sendStatus(401);
+}
