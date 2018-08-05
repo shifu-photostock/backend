@@ -226,7 +226,7 @@ module.exports = (app, passport) => {
                 return res.status(404).json({ err: err });
             }
 
-            res.redirect('/');
+            res.sendStatus(204);
         });
     });
 
@@ -244,7 +244,7 @@ module.exports = (app, passport) => {
 
     app.post('/logout', (req, res) => {
         req.session.destroy(function (err) {
-            res.redirect('/'); //Inside a callback… bulletproof!
+            res.sendStatus(200); //Inside a callback… bulletproof!
         })
     });
 };
