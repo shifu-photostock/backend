@@ -6,6 +6,7 @@ const config = require('../config/index');
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 const path = require('path');
+const url = require('url');
 
 //////////////////
 //DATABASE SETUP//
@@ -80,13 +81,17 @@ module.exports = (app) => {
     });
 
     app.get('/carousel/:id', (req, res) => {
+        let q = url.parse(req.url, true);
         let offsetNum = req.params.id;
-        console.log(offsetNum);
         let offset = offsetNum * 5;
-        gfs.files.find().skip(offset).limit(5).toArray((err, files) => {
+        let limit = 5;
+        if (q.query.value) {
+            limit = Number(q.query.value);
+        }
+        gfs.files.find().skip(offset).limit(limit).toArray((err, files) => {
             console.log(files);
             if (!files || files.length === 0) {
-                res.render('index', { files: false });
+                res.sendStatus(404);
             } else {
                 files.map(file => {
                     if (
