@@ -32,7 +32,7 @@ const storage = new GridFsStorage({
                 const fileInfo = {
                     metadata: {
                         orName: file.originalname,
-                        author: req.user.id},
+                        author: ""},
                     filename: filename,
                     bucketName: 'uploads'
                 };
@@ -61,29 +61,9 @@ const Grid = require('gridfs-stream');
 
 module.exports = (app, passport) => {
 
-    // app.get('/', (req, res) => {
-    //     gfs.files.find().toArray((err, files) => {
-    //
-    //         if (!files || files.length === 0) {
-    //             res.render('index', { files: false });
-    //         } else {
-    //             files.map(file => {
-    //                 if (
-    //                     file.contentType === 'image/jpeg' ||
-    //                     file.contentType === 'image/png'
-    //                 ) {
-    //                     file.isImage = true;
-    //                 } else {
-    //                     file.isImage = false;
-    //                 }
-    //             });
-    //             res.render('index', { files: files });
-    //         }
-    //     });
-    // });
-
     app.get('/', (req, res) => {
-        console.log('THAT!!! ' + req.session)
+        console.log('THAT!!! ' + req.session);
+        console.log(req.user._id);
         res.send(req.session);
     });
 
@@ -114,6 +94,7 @@ module.exports = (app, passport) => {
 
     app.post('/profile/:id/changemail', (req, res) => {
         let newMail = req.body.newmail;
+        newMail = newMail.toLowerCase();
         console.log(newMail);
         UsersModel.find({'local.email': newMail}, (err, results) => {
             if (err)
@@ -137,6 +118,32 @@ module.exports = (app, passport) => {
 
         });
     });
+
+    app.post('/profile/:id/changepassword', (req, res) => {
+        let oldPassword = req.body.oldpassword;
+        let newPassword = req.body.newpassword;
+        console.log(req.params.id);
+        let id = req.params.id;
+        UsersModel.findOne({_id : id}, (err, user) => {
+            if (err)
+                throw err;
+
+            if (user.validPassword(oldPassword)) {
+                UsersModel.findByIdAndUpdate(
+                    req.params.id,
+                    {'local.password': user.generateHash(newPassword)}, (err, user) => {
+                        if (err)
+                            throw err;
+
+                        console.log('PAssword updated successul!');
+                        res.sendStatus(200);
+                    })
+            } else {
+                res.sendStatus(400);
+            }
+        })
+    });
+
 
     app.get('/carousel/:num', (req, res) => {
         console.log(JSON.stringify(req.session));
@@ -217,6 +224,12 @@ module.exports = (app, passport) => {
 
 
     app.post('/upload', upload.single('file'), (req, res) => {
+        console.log(req.file.id);
+        gfs.files.update({_id: req.file.id}, {$set: {'metadata.author' : req.body.author}}, (err, file) => {
+            if (err) throw err;
+        console.log('Succes!');
+        });
+        console.log(req.body.author);
         res.json({file: req.file});
         // res.redirect('/');
     });
@@ -252,11 +265,7 @@ module.exports = (app, passport) => {
             if (err)
                 throw err;
 
-            if (user) {
-                res.send(user)
-            } else {
-                res.sendStatus(400)
-            }
+            res.send(user);
         })
 
     });

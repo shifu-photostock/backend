@@ -15,19 +15,9 @@ const cookieParser = require('cookie-parser');
 //THIS!!!
 app.use(cors({
     origin: ['http://46.101.99.128:8080',],
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'DELETE'],
     credentials: true// enable set cookie
 }));
-// var allowCrossDomain = function(req, res, next) {
-//     res.header('Access-Control-Allow-Origin', '*');
-//     res.header('Access-Control-Allow-Credentials', true);
-//     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//     next();
-// };
-
-// app.use(cors({credentials: true // enable set cookie
-// }));
 
 //THIS!!!
 app.use(function(req, res, next) {
@@ -36,18 +26,6 @@ app.use(function(req, res, next) {
     res.header('Access-Control-Allow-Credentials', true);
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next(); });
-
-// app.all('', function(req, res, next) {
-//     console.log("WORKING!!!");
-//     res.header("Access-Control-Allow-Origin", "*");
-//     res.header('Access-Control-Allow-Credentials', true);
-//     res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
-//     res.header('Access-Control-Allow-Headers', "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-// //Auth Each API Request created by user.
-//     next();
-// });
-//
-// app.use(allowCrossDomain);
 
 app.use(cookieParser("my-secret"));
 

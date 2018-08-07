@@ -3,7 +3,6 @@
 #### API routes
 - get('/getallimages')
 - get('/image/:filename')
-- post('/upload') - 'file'
 - delete('/files/:id')
 
 - get('/carousel/:id') - подгрузка 5 фотографий
@@ -23,3 +22,7 @@
 - post('/profile/:id/changename') - смена имени пользователя (поле 'newname')
 - post('/profile/:id/changemail') - смена почты пользователя (поле 'newmail')
 - post('/findbyname') - поиск пользователя по имени (поле 'name')
+
+##### Very new routes
+- post('/upload') - 'file', 'author' (текстовое поле с именем пользователя)
+- post('/profile/:id/changepassword') - 'oldpassword', 'newpassword'
