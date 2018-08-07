@@ -83,10 +83,63 @@ module.exports = (app, passport) => {
     // });
 
     app.get('/', (req, res) => {
-        res.send(req.user);
-    })
+        console.log('THAT!!! ' + req.session)
+        res.send(req.session);
+    });
+
+    app.post('/profile/:id/changename', (req, res) => {
+        let newName = req.body.newname;
+        console.log(newName);
+        UsersModel.find({'local.name': newName}, (err, results) => {
+            if (err)
+                throw err;
+            console.log(results === undefined);
+            if (results[0] === undefined) {
+                UsersModel.findByIdAndUpdate(
+                    req.params.id,
+                    {'local.name': newName}, (err, user) => {
+                        if (err)
+                            throw err;
+
+                        console.log('Name updated successful!');
+                        res.sendStatus(200);
+                    }
+                )
+            } else {
+                res.sendStatus(400);
+            }
+
+        });
+    });
+
+    app.post('/profile/:id/changemail', (req, res) => {
+        let newMail = req.body.newmail;
+        console.log(newMail);
+        UsersModel.find({'local.email': newMail}, (err, results) => {
+            if (err)
+                throw err;
+            console.log(results === undefined);
+            if (results[0] === undefined) {
+                console.log("Botv lfkmit");
+                UsersModel.findByIdAndUpdate(
+                    req.params.id,
+                    {'local.email': newMail}, (err, user) => {
+                        if (err)
+                            throw err;
+
+                        console.log('Mail updated successul!');
+                        res.sendStatus(200);
+                    }
+                )
+            } else {
+                res.sendStatus(400);
+            }
+
+        });
+    });
 
     app.get('/carousel/:num', (req, res) => {
+        console.log(JSON.stringify(req.session));
         let q = url.parse(req.url, true);
         let offsetNum = req.params.num;
         let offset = offsetNum * 5;
@@ -109,7 +162,7 @@ module.exports = (app, passport) => {
                         file.isImage = false;
                     }
                 });
-                res.send({ files: files });
+                res.send({files: files});
             }
         });
     });
@@ -139,7 +192,7 @@ module.exports = (app, passport) => {
                         file.isImage = false;
                     }
                 });
-                res.send({ files: files });
+                res.send({files: files});
             }
         });
     });
@@ -148,7 +201,7 @@ module.exports = (app, passport) => {
         gfs.files.find().toArray((err, files) => {
 
             if (!files || files.length === 0) {
-                res.render('index', { files: false });
+                res.render('index', {files: false});
             } else {
                 files.map(file => {
                     if (file.contentType === 'image/jpeg' || 'image/png') {
@@ -157,19 +210,19 @@ module.exports = (app, passport) => {
                         file.isImage = false;
                     }
                 });
-                res.send({ files: files });
+                res.send({files: files});
             }
         });
     });
 
 
-    app.post('/upload', isLoggedIn, upload.single('file'), (req, res) => {
-        res.json({ file: req.file });
+    app.post('/upload', upload.single('file'), (req, res) => {
+        res.json({file: req.file});
         // res.redirect('/');
     });
 
     app.get('/image/:filename', (req, res) => {
-        gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+        gfs.files.findOne({filename: req.params.filename}, (err, file) => {
 
             if (!file || file.length === 0) {
                 return res.status(404).json({
@@ -194,6 +247,20 @@ module.exports = (app, passport) => {
         }
     );
 
+    app.post('/findbyname', (req, res) => {
+        UsersModel.findOne({'local.name' : req.body.name}, (err, user) => {
+            if (err)
+                throw err;
+
+            if (user) {
+                res.send(user)
+            } else {
+                res.sendStatus(400)
+            }
+        })
+
+    });
+
     app.get('/profile/:id', async (req, res) => {
         let user = await UsersModel.find({_id: req.params.id}).lean().exec();
         res.send(user);
@@ -203,10 +270,10 @@ module.exports = (app, passport) => {
         console.log(req.params.id);
         gfs.files.find(
             {'metadata.author': req.params.id}
-            ).toArray((err, files) => {
+        ).toArray((err, files) => {
 
             if (!files || files.length === 0) {
-                res.render('index', { files: false });
+                res.render('index', {files: false});
             } else {
                 files.map(file => {
                     if (file.contentType === 'image/jpeg' || 'image/png') {
@@ -215,15 +282,15 @@ module.exports = (app, passport) => {
                         file.isImage = false;
                     }
                 });
-                res.send({ files: files });
+                res.send({files: files});
             }
         });
     });
 
     app.delete('/files/:id', (req, res) => {
-        gfs.remove({ _id: req.params.id, root: 'uploads' }, (err, gridStore) => {
+        gfs.remove({_id: req.params.id, root: 'uploads'}, (err, gridStore) => {
             if (err) {
-                return res.status(404).json({ err: err });
+                return res.status(404).json({err: err});
             }
 
             res.sendStatus(204);
@@ -243,10 +310,14 @@ module.exports = (app, passport) => {
 
 
     app.post('/logout', (req, res) => {
+        console.log(req.session);
+        console.log("WIN WIN" + req.user);
         req.session.destroy(function (err) {
             res.sendStatus(200); //Inside a callback… bulletproof!
         })
     });
+
+
 };
 
 function isLoggedIn(req, res, next) {
