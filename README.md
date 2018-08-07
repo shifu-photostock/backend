@@ -22,4 +22,4 @@
 ##### New routes
 - post('/profile/:id/changename') - смена имени пользователя (поле 'newname')
 - post('/profile/:id/changemail') - смена почты пользователя (поле 'newmail')
-- post('/findbyname') - поиск пользователя по имени (поле 'name)
+- post('/findbyname') - поиск пользователя по имени (поле 'name')
