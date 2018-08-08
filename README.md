@@ -26,3 +26,4 @@
 ##### Very new routes
 - post('/upload') - 'file', 'author' (текстовое поле с именем пользователя)
 - post('/profile/:id/changepassword') - 'oldpassword', 'newpassword'
+- post('/findbychar') - поиск пользователя по первым буквам имени (поле 'chars')

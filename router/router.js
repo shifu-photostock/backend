@@ -63,7 +63,6 @@ module.exports = (app, passport) => {
 
     app.get('/', (req, res) => {
         console.log('THAT!!! ' + req.session);
-        console.log(req.user._id);
         res.send(req.session);
     });
 
@@ -268,6 +267,18 @@ module.exports = (app, passport) => {
             res.send(user);
         })
 
+    });
+
+    app.post('/findbychar', (req, res) => {
+        let charsToFind = req.body.chars;
+        let regexpToFind = new RegExp('^' + charsToFind, 'i');
+        console.log(regexpToFind);
+        UsersModel.find({'local.name': regexpToFind}, (err, users) => {
+            if (err)
+                throw err;
+
+            res.send(users);
+        })
     });
 
     app.get('/profile/:id', async (req, res) => {
