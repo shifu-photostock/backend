@@ -32,7 +32,8 @@ const storage = new GridFsStorage({
                 const fileInfo = {
                     metadata: {
                         orName: file.originalname,
-                        author: ""},
+                        author: "",
+                        avatar: false},
                     filename: filename,
                     bucketName: 'uploads'
                 };
@@ -41,6 +42,8 @@ const storage = new GridFsStorage({
         });
     }
 });
+
+
 const upload = multer({ storage });
 
 let gfs;
@@ -63,7 +66,11 @@ module.exports = (app, passport) => {
 
     app.get('/', (req, res) => {
         console.log('THAT!!! ' + req.session);
-        res.send(req.session);
+        if (req.session.passport === undefined) {
+            res.send([]);
+        } else {
+            res.send(req.session.passport.user._id);
+        }
     });
 
     app.post('/profile/:id/changename', (req, res) => {
@@ -227,6 +234,25 @@ module.exports = (app, passport) => {
         gfs.files.update({_id: req.file.id}, {$set: {'metadata.author' : req.body.author}}, (err, file) => {
             if (err) throw err;
         console.log('Succes!');
+        });
+        console.log(req.body.author);
+        res.json({file: req.file});
+        // res.redirect('/');
+    });
+
+    app.post('/uploadavatar', upload.single('file'), (req, res) => {
+        console.log(req.file.id);
+        let author = req.body.author;
+        gfs.files.update({_id: req.file.id},
+            {$set:
+                    {'metadata.author' : author, 'metadata.avatar' : true }},
+            (err, file) => {
+            console.log(file);
+                if (err) throw err;
+                UsersModel.findByIdAndUpdate(author, {'local.avatar' : req.file.id}, (err, user) => {
+                    if (err) throw err;
+                    console.log('Avatar uploaded successful!')
+                })
         });
         console.log(req.body.author);
         res.json({file: req.file});

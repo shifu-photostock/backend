@@ -24,6 +24,7 @@
 - post('/findbyname') - поиск пользователя по имени (поле 'name')
 
 ##### Very new routes
-- post('/upload') - 'file', 'author' (текстовое поле с именем пользователя)
+- post('/upload') - 'file', 'author' (текстовое поле с id пользователя)
 - post('/profile/:id/changepassword') - 'oldpassword', 'newpassword'
 - post('/findbychar') - поиск пользователя по первым буквам имени (поле 'chars')
+- post('/uploadavatar') - загрузка аватарка (поля 'file', 'author' (текстовое поле с id пользователя))
