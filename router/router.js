@@ -160,7 +160,7 @@ module.exports = (app, passport) => {
         if (q.query.value) {
             limit = Number(q.query.value);
         }
-        gfs.files.find().skip(offset).limit(limit).toArray((err, files) => {
+        gfs.files.find().sort({"uploadDate": -1}).skip(offset).limit(limit).toArray((err, files) => {
             console.log(files);
             if (!files || files.length === 0) {
                 res.sendStatus(404);
@@ -190,7 +190,7 @@ module.exports = (app, passport) => {
         }
         gfs.files.find({
             'metadata.author': req.params.id
-        }).skip(offset).limit(limit).toArray((err, files) => {
+        }).sort({"uploadDate": -1}).skip(offset).limit(limit).toArray((err, files) => {
             console.log(files);
             if (!files || files.length === 0) {
                 res.sendStatus(404);
@@ -211,7 +211,7 @@ module.exports = (app, passport) => {
     });
 
     app.get('/getallimages', (req, res) => {
-        gfs.files.find().toArray((err, files) => {
+        gfs.files.find().sort({"uploadDate": -1}).toArray((err, files) => {
 
             if (!files || files.length === 0) {
                 res.render('index', {files: false});
@@ -241,7 +241,7 @@ module.exports = (app, passport) => {
     });
 
     app.post('/uploadavatar', upload.single('file'), (req, res) => {
-        console.log(req.file.id);
+        console.log(req.file);
         let author = req.body.author;
         gfs.files.update({_id: req.file.id},
             {$set:
@@ -249,7 +249,7 @@ module.exports = (app, passport) => {
             (err, file) => {
             console.log(file);
                 if (err) throw err;
-                UsersModel.findByIdAndUpdate(author, {'local.avatar' : req.file.id}, (err, user) => {
+                UsersModel.findByIdAndUpdate(author, {'local.avatar' : req.file.filename}, (err, user) => {
                     if (err) throw err;
                     console.log('Avatar uploaded successful!')
                 })
@@ -334,6 +334,22 @@ module.exports = (app, passport) => {
     });
 
     app.delete('/files/:id', (req, res) => {
+        let idToDelete = req.params.id;
+        console.log(req.params.id);
+        // let ObjectID = mongoose.mongo.BSONPure.ObjectID;
+        // console.log(ObjectID(idToDelete));
+        gfs.findOne({"_id": idToDelete}, (err, file) => {
+            if (err) throw err;
+            console.log(file);
+            console.log(file.metadata.avatar);
+            if(file.metadata.avatar === true) {
+                UsersModel.findOneAndUpdate({'local.avatar' : file.filename}, {$set : {'local.avatar' : ""}},
+                    (err, user) => {
+                    if(err) throw err;
+                    console.log('Avatar was deleted');
+                    })
+            }
+        });
         gfs.remove({_id: req.params.id, root: 'uploads'}, (err, gridStore) => {
             if (err) {
                 return res.status(404).json({err: err});
