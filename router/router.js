@@ -160,7 +160,7 @@ module.exports = (app, passport) => {
         if (q.query.value) {
             limit = Number(q.query.value);
         }
-        gfs.files.find().sort({"uploadDate": -1}).skip(offset).limit(limit).toArray((err, files) => {
+        gfs.files.find({'metadata.avatar' : { $ne: true}}).sort({"uploadDate": -1}).skip(offset).limit(limit).toArray((err, files) => {
             console.log(files);
             if (!files || files.length === 0) {
                 res.sendStatus(404);
@@ -189,8 +189,8 @@ module.exports = (app, passport) => {
             limit = Number(q.query.value);
         }
         gfs.files.find({
-            'metadata.author': req.params.id
-        }).sort({"uploadDate": -1}).skip(offset).limit(limit).toArray((err, files) => {
+            'metadata.author': req.params.id,
+            'metadata.avatar' : { $ne: true}}).sort({"uploadDate": -1}).skip(offset).limit(limit).toArray((err, files) => {
             console.log(files);
             if (!files || files.length === 0) {
                 res.sendStatus(404);
@@ -211,7 +211,7 @@ module.exports = (app, passport) => {
     });
 
     app.get('/getallimages', (req, res) => {
-        gfs.files.find().sort({"uploadDate": -1}).toArray((err, files) => {
+        gfs.files.find({'metadata.avatar' : { $ne: true}}).sort({"uploadDate": -1}).toArray((err, files) => {
 
             if (!files || files.length === 0) {
                 res.render('index', {files: false});
@@ -228,6 +228,23 @@ module.exports = (app, passport) => {
         });
     });
 
+    app.get('/getallallimages', (req, res) => {
+        gfs.files.find().sort({"uploadDate": -1}).toArray((err, files) => {
+
+            if (!files || files.length === 0) {
+                res.render('index', {files: false});
+            } else {
+                files.map(file => {
+                    if (file.contentType === 'image/jpeg' || 'image/png') {
+                        file.isImage = true;
+                    } else {
+                        file.isImage = false;
+                    }
+                });
+                res.send({files: files});
+            }
+        });
+    });
 
     app.post('/upload', upload.single('file'), (req, res) => {
         console.log(req.file.id);
@@ -351,6 +368,32 @@ module.exports = (app, passport) => {
             }
         });
         gfs.remove({_id: req.params.id, root: 'uploads'}, (err, gridStore) => {
+            if (err) {
+                return res.status(404).json({err: err});
+            }
+
+            res.sendStatus(204);
+        });
+    });
+
+    app.delete('/images/:filename', (req, res) => {
+        let nameToDelete = req.params.filename;
+        console.log(req.params.filename);
+        // let ObjectID = mongoose.mongo.BSONPure.ObjectID;
+        // console.log(ObjectID(idToDelete));
+        gfs.findOne({'filename': nameToDelete}, (err, file) => {
+            if (err) throw err;
+            console.log(file);
+            console.log(file.metadata.avatar);
+            if(file.metadata.avatar === true) {
+                UsersModel.findOneAndUpdate({'local.avatar' : file.filename}, {$set : {'local.avatar' : ""}},
+                    (err, user) => {
+                        if(err) throw err;
+                        console.log('Avatar was deleted');
+                    })
+            }
+        });
+        gfs.remove({'filename': req.params.filename, root: 'uploads'}, (err, gridStore) => {
             if (err) {
                 return res.status(404).json({err: err});
             }
