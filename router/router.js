@@ -11,6 +11,7 @@ const UsersModel = require('../models/users.model');
 
 const authController = require('../controllers/authController');
 const profileController = require('../controllers/profileController');
+const commentController = require('../controllers/commentController');
 
 //////////////////
 //DATABASE SETUP//
@@ -334,13 +335,20 @@ module.exports = (app, passport) => {
         });
     });
 
+    //Comments
+    app.get('/getallcomments', commentController.findAll);
+    app.get('/image/:filename/comment', commentController.findByImage);
+    app.post('/image/:filename/comment', isLoggedIn, commentController.addComment);
+    app.delete('/comment/:id', isLoggedIn, commentController.deleteComment);
+    app.put('/comment/:id', isLoggedIn, commentController.editComment);
+
+
+
 
     //Authentication
     app.post('/login', passport.authenticate('local-login'), authController.login);
 
-
     app.post('/register', passport.authenticate('local-signup'), authController.register);
-
 
     app.post('/logout', authController.logout);
 
@@ -352,4 +360,4 @@ function isLoggedIn(req, res, next) {
         return next();
 
     res.sendStatus(401);
-}
+};

@@ -14,8 +14,8 @@ const cookieParser = require('cookie-parser');
 
 //THIS!!!
 app.use(cors({
-    origin: ['http://localhost:8080',],
-    methods: ['GET', 'POST', 'DELETE'],
+    origin: ['http://localhost:8080', 'http://http://46.101.99.128:8080'],
+    methods: ['GET', 'POST', 'DELETE', 'PUT'],
     credentials: true// enable set cookie
 }));
 

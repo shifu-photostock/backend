@@ -18,13 +18,19 @@
 - get('/profile/:id') - получить пользователя по id
 - get('/profile/:id/getallimages') - получить все фотографии пользователя
 
-##### New routes
+
 - post('/profile/:id/changename') - смена имени пользователя (поле 'newname')
 - post('/profile/:id/changemail') - смена почты пользователя (поле 'newmail')
 - post('/findbyname') - поиск пользователя по имени (поле 'name')
 
-##### Very new routes
 - post('/upload') - 'file', 'author' (текстовое поле с id пользователя)
 - post('/profile/:id/changepassword') - 'oldpassword', 'newpassword'
 - post('/findbychar') - поиск пользователя по первым буквам имени (поле 'chars')
 - post('/uploadavatar') - загрузка аватарка (поля 'file', 'author' (текстовое поле с id пользователя))
+
+##### New routes (comments)
+- app.get('/getallcomments') - получить все комменты
+- app.get('/image/:filename/comment') - получить комменты по имени фотографии
+- app.post('/image/:filename/comment') - запостить коммент по имени фотографии (поле 'comment')
+- app.delete('/comment/:id') - удалить коммент по Id;
+- app.put('/comment/:id') - редактировать коммент по Id (поле 'newcomment')
