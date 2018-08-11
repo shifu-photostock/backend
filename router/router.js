@@ -9,6 +9,9 @@ const path = require('path');
 const url = require('url');
 const UsersModel = require('../models/users.model');
 
+const authController = require('../controllers/authController');
+const profileController = require('../controllers/profileController');
+
 //////////////////
 //DATABASE SETUP//
 //////////////////
@@ -73,82 +76,11 @@ module.exports = (app, passport) => {
         }
     });
 
-    app.post('/profile/:id/changename', (req, res) => {
-        let newName = req.body.newname;
-        console.log(newName);
-        UsersModel.find({'local.name': newName}, (err, results) => {
-            if (err)
-                throw err;
-            console.log(results === undefined);
-            if (results[0] === undefined) {
-                UsersModel.findByIdAndUpdate(
-                    req.params.id,
-                    {'local.name': newName}, (err, user) => {
-                        if (err)
-                            throw err;
+    app.post('/profile/:id/changename', profileController.changename);
 
-                        console.log('Name updated successful!');
-                        res.sendStatus(200);
-                    }
-                )
-            } else {
-                res.sendStatus(400);
-            }
+    app.post('/profile/:id/changemail', profileController.changemail);
 
-        });
-    });
-
-    app.post('/profile/:id/changemail', (req, res) => {
-        let newMail = req.body.newmail;
-        newMail = newMail.toLowerCase();
-        console.log(newMail);
-        UsersModel.find({'local.email': newMail}, (err, results) => {
-            if (err)
-                throw err;
-            console.log(results === undefined);
-            if (results[0] === undefined) {
-                console.log("Botv lfkmit");
-                UsersModel.findByIdAndUpdate(
-                    req.params.id,
-                    {'local.email': newMail}, (err, user) => {
-                        if (err)
-                            throw err;
-
-                        console.log('Mail updated successul!');
-                        res.sendStatus(200);
-                    }
-                )
-            } else {
-                res.sendStatus(400);
-            }
-
-        });
-    });
-
-    app.post('/profile/:id/changepassword', (req, res) => {
-        let oldPassword = req.body.oldpassword;
-        let newPassword = req.body.newpassword;
-        console.log(req.params.id);
-        let id = req.params.id;
-        UsersModel.findOne({_id : id}, (err, user) => {
-            if (err)
-                throw err;
-
-            if (user.validPassword(oldPassword)) {
-                UsersModel.findByIdAndUpdate(
-                    req.params.id,
-                    {'local.password': user.generateHash(newPassword)}, (err, user) => {
-                        if (err)
-                            throw err;
-
-                        console.log('PAssword updated successul!');
-                        res.sendStatus(200);
-                    })
-            } else {
-                res.sendStatus(400);
-            }
-        })
-    });
+    app.post('/profile/:id/changepassword', profileController.changepassword);
 
 
     app.get('/carousel/:num', (req, res) => {
@@ -402,25 +334,15 @@ module.exports = (app, passport) => {
         });
     });
 
-    app.post('/login', passport.authenticate('local-login'),
-        function (req, res) {
-            res.send({user: req.user});
-        });
+
+    //Authentication
+    app.post('/login', passport.authenticate('local-login'), authController.login);
 
 
-    app.post('/register', passport.authenticate('local-signup'),
-        function (req, res) {
-            res.send({user: req.user});
-        });
+    app.post('/register', passport.authenticate('local-signup'), authController.register);
 
 
-    app.post('/logout', (req, res) => {
-        console.log(req.session);
-        console.log("WIN WIN" + req.user);
-        req.session.destroy(function (err) {
-            res.sendStatus(200); //Inside a callback… bulletproof!
-        })
-    });
+    app.post('/logout', authController.logout);
 
 
 };

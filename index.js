@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
 const config = require('./config/config');
-const mongoose = require('mongoose');
+const {mongoose} = require('./database/mongoose');
 const winston = require('winston');
 const cookieParser = require('cookie-parser');
 
@@ -49,7 +49,7 @@ app.set('view engine', 'ejs');
 
 const passport = require('passport');
 
-var session = require("express-session")({
+let session = require("express-session")({
     secret: "my-secret",
     resave: true,
     saveUninitialized: true,
@@ -62,16 +62,7 @@ app.use(passport.session()); // persistent login sessions
 require('./config/passport')(passport); // pass passport for configuration
 
 
-var dbURI = "mongodb://" +
-    encodeURIComponent(config.db.username) + ":" +
-    encodeURIComponent(config.db.password) + "@" +
-    config.db.host + ":" +
-    config.db.port + "/" +
-    config.db.name;
 
-mongoose.connect(dbURI, console.log('Succes!'));
-mongoose.Promise = require('bluebird');
-mongoose.set('debug', true);
 
 
 // parse application/x-www-form-urlencoded
