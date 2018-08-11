@@ -34,3 +34,9 @@
 - app.post('/image/:filename/comment') - запостить коммент по имени фотографии (поле 'comment')
 - app.delete('/comment/:id') - удалить коммент по Id;
 - app.put('/comment/:id') - редактировать коммент по Id (поле 'newcomment')
+
+##### Very new routes (likes)
+- app.post('/image/:filename/like') - поставить лайк
+- app.delete('/image/:filename/like') - убрать лайк
+- app.get('/getalllikes') - получить общий список лайков
+- app.get('/image/:filename/like') - получить список лайков по фотографии

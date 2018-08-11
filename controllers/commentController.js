@@ -1,11 +1,11 @@
 let Comment = require('../models/comments.model');
 
-exports.findAll = async (req, res) => {
+exports.getAll = async (req, res) => {
     let comments = await Comment.find().lean().exec();
     res.send(comments);
 };
 
-exports.findByImage = async (req, res) => {
+exports.getByImage = async (req, res) => {
     let comments = await Comment.find({'imageName': req.params.filename}).lean().exec();
     res.send(comments);
 };
