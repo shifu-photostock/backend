@@ -1,12 +1,27 @@
 let Comment = require('../models/comments.model');
+let User = require('../models/users.model');
 
 exports.getAll = async (req, res) => {
     let comments = await Comment.find().lean().exec();
+    const promises = comments.map(async (comment) => {
+
+        const authorName = await User.findOne({_id: comment.authorId});
+        comment.author = authorName.local.name;
+        console.log(comment);
+
+    });
+    await Promise.all(promises);
     res.send(comments);
 };
 
 exports.getByImage = async (req, res) => {
     let comments = await Comment.find({'imageName': req.params.filename}).lean().exec();
+    const promises = comments.map(async (comment) => {
+
+        comment.author = await User.find({_id: comment.authorId}).local.name;
+
+    });
+    await Promise.all(promises);
     res.send(comments);
 };
 

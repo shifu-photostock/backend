@@ -15,7 +15,7 @@ const cacheControl = require('express-cache-controller');
 
 //THIS!!!
 app.use(cors({
-    origin: ['http://localhost:8080', 'http://http://46.101.99.128:8080'],
+    origin: ['http://localhost:8080', 'http://46.101.99.128:8080'],
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     credentials: true// enable set cookie
 }));
