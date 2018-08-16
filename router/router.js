@@ -275,6 +275,9 @@ module.exports = (app, passport) => {
     });
 
     app.get('/image/:filename', (req, res) => {
+        res.cacheControl = {
+            maxAge: 30000000
+        };
         gfs.files.findOne({filename: req.params.filename}, (err, file) => {
 
             if (!file || file.length === 0) {

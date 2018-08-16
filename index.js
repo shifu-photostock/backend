@@ -31,7 +31,7 @@ app.use(function(req, res, next) {
 app.use(cookieParser("my-secret"));
 
 app.use(cacheControl({
-    maxAge: 31536000
+    noCache: true
 }));
 
 const logger = winston.createLogger({
