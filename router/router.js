@@ -96,8 +96,7 @@ module.exports = (app, passport) => {
         if (q.query.value) {
             limit = Number(q.query.value);
         }
-        gfs.files.find({'metadata.avatar' : { $ne: true}}).sort({"uploadDate": -1}).skip(offset).limit(limit).toArray((err, files) => {
-            console.log(files);
+        gfs.files.find({'metadata.avatar' : { $ne: true}}).sort({"uploadDate": -1}).skip(offset).limit(limit).toArray(async (err, files) => {
             if (!files || files.length === 0) {
                 res.sendStatus(404);
             } else {
@@ -111,6 +110,14 @@ module.exports = (app, passport) => {
                         file.isImage = false;
                     }
                 });
+                const promises = files.map(async (file) => {
+
+                    file.likes = await LikesModel.find({imageName: file.filename});
+
+                });
+                await Promise.all(promises);
+
+                console.log(files);
                 res.send({files: files});
             }
         });
@@ -126,7 +133,7 @@ module.exports = (app, passport) => {
         }
         gfs.files.find({
             'metadata.author': req.params.id,
-            'metadata.avatar' : { $ne: true}}).sort({"uploadDate": -1}).skip(offset).limit(limit).toArray((err, files) => {
+            'metadata.avatar' : { $ne: true}}).sort({"uploadDate": -1}).skip(offset).limit(limit).toArray(async (err, files) => {
             console.log(files);
             if (!files || files.length === 0) {
                 res.sendStatus(404);
@@ -141,13 +148,19 @@ module.exports = (app, passport) => {
                         file.isImage = false;
                     }
                 });
+                const promises = files.map(async (file) => {
+
+                    file.likes = await LikesModel.find({imageName: file.filename});
+
+                });
+                await Promise.all(promises);
                 res.send({files: files});
             }
         });
     });
 
     app.get('/getallimages', (req, res) => {
-        gfs.files.find({'metadata.avatar' : { $ne: true}}).sort({"uploadDate": -1}).toArray((err, files) => {
+        gfs.files.find({'metadata.avatar' : { $ne: true}}).sort({"uploadDate": -1}).toArray(async (err, files) => {
 
             if (!files || files.length === 0) {
                 res.render('index', {files: false});
@@ -159,33 +172,59 @@ module.exports = (app, passport) => {
                         file.isImage = false;
                     }
                 });
+                const promises = files.map(async (file) => {
+
+                    file.likes = await LikesModel.find({imageName: file.filename});
+
+                });
+                await Promise.all(promises);
                 res.send({files: files});
             }
         });
     });
 
-    app.get('/getaallimages', (req, res) => {
-        gfs.files.find({'metadata.avatar' : { $ne: true}}).sort({"uploadDate": -1}).toArray((err, files) => {
+    app.get('/getaallimages', async (req, res) => {
+        // gfs.files.find({'metadata.avatar': {$ne: true}}).sort({"uploadDate": -1}).toArray((err, files) => {
+        let files = await gfs.files.find({'metadata.avatar': {$ne: true}}).sort({"uploadDate": -1}).toArray();
+            // files.forEach(async (file) => {
+            //     await LikesModel.find({imageName: file.filename}, (likes => {
+            //
+            //         file.vas = likes;
+            //     }))
+            // });
 
-                files.forEach((file) => {
-                    LikesModel.find({imageName: file.filename}, (likes => {
+            const promises = files.map(async (file) => {
 
-                        file.vas = likes;
-                    }))
-                });
-
-            files.map(file => {
-                if (file.contentType === 'image/jpeg' || 'image/png') {
-                    file.isImage = true;
-                } else {
-                    file.isImage = false;
-                }
-            });
-            console.log(files);
-                     })
-
+                file.likes = await LikesModel.find({imageName: file.filename});
 
             });
+            await Promise.all(promises);
+            console.log();
+            res.send(files);
+        });
+
+
+
+
+            // files.map(file => {LikesModel.find({imageName: file.filename}, async (likes) => {
+            //     await console.log(file);
+            //     file = likes;
+            //
+            //     if (file.contentType === 'image/jpeg' || 'image/png') {
+            //         file.isImage = true;
+            //     } else {
+            //         file.isImage = false;
+            //     }
+            // })
+            //
+            // });
+            //
+            // res.send(files);
+            // })
+            //          })
+
+
+
 
     // app.get('/getallallimages', (req, res) => {
     //     gfs.files.find(files => {
