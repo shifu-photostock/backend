@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const path = require('path');
 const url = require('url');
 const UsersModel = require('../models/users.model');
+const LikesModel = require('../models/likes.model');
 
 const authController = require('../controllers/authController');
 const profileController = require('../controllers/profileController');
@@ -38,7 +39,8 @@ const storage = new GridFsStorage({
                     metadata: {
                         orName: file.originalname,
                         author: "",
-                        avatar: false},
+                        avatar: false,
+                        likes: []},
                     filename: filename,
                     bucketName: 'uploads'
                 };
@@ -162,23 +164,85 @@ module.exports = (app, passport) => {
         });
     });
 
-    app.get('/getallallimages', (req, res) => {
-        gfs.files.find().sort({"uploadDate": -1}).toArray((err, files) => {
+    app.get('/getaallimages', (req, res) => {
+        gfs.files.find({'metadata.avatar' : { $ne: true}}).sort({"uploadDate": -1}).toArray((err, files) => {
 
-            if (!files || files.length === 0) {
-                res.render('index', {files: false});
-            } else {
-                files.map(file => {
-                    if (file.contentType === 'image/jpeg' || 'image/png') {
-                        file.isImage = true;
-                    } else {
-                        file.isImage = false;
-                    }
+                files.forEach((file) => {
+                    LikesModel.find({imageName: file.filename}, (likes => {
+
+                        file.vas = likes;
+                    }))
                 });
-                res.send({files: files});
-            }
-        });
-    });
+
+            files.map(file => {
+                if (file.contentType === 'image/jpeg' || 'image/png') {
+                    file.isImage = true;
+                } else {
+                    file.isImage = false;
+                }
+            });
+            console.log(files);
+                     })
+
+
+            });
+
+    // app.get('/getallallimages', (req, res) => {
+    //     gfs.files.find(files => {
+    //         files.map((file) => {
+    //             LikesModel.find({imageName: file.filename}, (likes => {
+    //                 file.vas = likes;
+    //             }));
+    //         })
+    //     }).then(files => {
+    //         res.send(files);
+    //     })
+    // });
+
+
+    // app.get('/getallallimages', (req, res) => {
+    //     gfs.files.find().sort({"uploadDate": -1}).toArray((err, files) => {
+    //         let newAr = new Array();
+    //         if (!files || files.length === 0) {
+    //             res.render('index', {files: false});
+    //         } else {
+    //             files.map(async file => {
+    //
+    //                 let likes = await LikesModel.find({imageName : file.filename}).lean().exec();
+    //                 // LikesModel.find({imageName : file.filename}, (err, likesList) => {
+    //                 //     if (err) throw err;
+    //                 //     console.log(file);
+    //                 //     file.vas = "111";
+    //                 // }).then(li)
+    //                 if (file.contentType === 'image/jpeg' || 'image/png') {
+    //                     file.isImage = "AHAHAHA"
+    //                     file.vas = likes;
+    //                     newAr.push(file);
+    //                     console.log(file);
+    //                 } else {
+    //                     file.isImage = false;
+    //                 }
+    //             });
+
+                // files.map(file => {
+                //     LikesModel.find({imageName : file.filename}, (err, likesList) => {
+                //         if (err) throw err;
+                //         console.log(file);
+                //         file.vas = "111";
+                //     });
+                // });
+                // console.log((newAr));
+                // res.send({newAr});
+
+
+    //         }
+    //         return files;
+    //
+    //     }).then((err, files) => {
+    //         if (err) throw err;
+    //         res.send(files);
+    //     });
+    // });
 
     app.post('/upload', upload.single('file'), (req, res) => {
         console.log(req.file.id);

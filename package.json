@@ -10,10 +10,13 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
+    "bluebird": "latest",
     "body-parser": "^1.18.3",
+    "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
     "ejs": "^2.6.1",
     "express": "^4.16.3",
+    "express-cache-controller": "^1.1.0",
     "express-session": "^1.15.6",
     "gridfs-stream": "^1.1.1",
     "method-override": "^3.0.0",
@@ -24,8 +27,6 @@
     "passport-local": "^1.0.0",
     "passport-vkontakte": "^0.3.2",
     "path": "^0.12.7",
-    "winston": "^3.0.0",
-    "cookie-parser": "latest",
-    "bluebird": "latest"
+    "winston": "^3.0.0"
   }
 }

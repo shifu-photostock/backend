@@ -10,6 +10,7 @@ const config = require('./config/config');
 const {mongoose} = require('./database/mongoose');
 const winston = require('winston');
 const cookieParser = require('cookie-parser');
+const cacheControl = require('express-cache-controller');
 
 
 //THIS!!!
@@ -28,6 +29,10 @@ app.use(function(req, res, next) {
     next(); });
 
 app.use(cookieParser("my-secret"));
+
+app.use(cacheControl({
+    maxAge: 31536000
+}));
 
 const logger = winston.createLogger({
     level: 'silly',
