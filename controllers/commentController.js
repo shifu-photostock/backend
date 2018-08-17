@@ -18,7 +18,9 @@ exports.getByImage = async (req, res) => {
     let comments = await Comment.find({'imageName': req.params.filename}).lean().exec();
     const promises = comments.map(async (comment) => {
 
-        comment.author = await User.find({_id: comment.authorId}).local.name;
+        const authorName = await User.findOne({_id: comment.authorId});
+        comment.author = authorName.local.name;
+        console.log(comment);
 
     });
     await Promise.all(promises);
