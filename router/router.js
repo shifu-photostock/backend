@@ -14,6 +14,7 @@ const authController = require('../controllers/authController');
 const profileController = require('../controllers/profileController');
 const commentController = require('../controllers/commentController');
 const likeController = require('../controllers/likeController');
+const friendController = require('../controllers/friendController');
 
 //////////////////
 //DATABASE SETUP//
@@ -462,6 +463,10 @@ module.exports = (app, passport) => {
     app.get('/getalllikes', likeController.getAll);
     app.get('/image/:filename/like', likeController.getByImage);
 
+    //Friendship
+    app.get('/friends', isLoggedIn, friendController.getFriends);
+    app.post('/friends', isLoggedIn, friendController.sendRequire);
+    app.delete('/friends', isLoggedIn, friendController.removeFriend);
 };
 
 function isLoggedIn(req, res, next) {

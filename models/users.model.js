@@ -2,6 +2,7 @@
 var mongoose = require('mongoose');
 var bcrypt   = require('bcrypt-nodejs');
 
+var friends = require('mongoose-friends');
 // define the schema for our user model
 var userSchema = mongoose.Schema({
 
@@ -16,7 +17,6 @@ var userSchema = mongoose.Schema({
         token        : String,
         name         : String
     }
-
 });
 
 // generating a hash
@@ -35,6 +35,8 @@ userSchema.methods.comparePassword = function(candidatePassword, cb) {
         cb(null, isMatch);
     });
 };
+
+userSchema.plugin(friends({pathName: "friends"}));
 
 // create the model for users and expose it to our app
 module.exports = mongoose.model('UserModel', userSchema);
