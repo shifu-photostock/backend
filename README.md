@@ -28,15 +28,18 @@
 - post('/findbychar') - поиск пользователя по первым буквам имени (поле 'chars')
 - post('/uploadavatar') - загрузка аватарка (поля 'file', 'author' (текстовое поле с id пользователя))
 
-##### New routes (comments)
 - app.get('/getallcomments') - получить все комменты
 - app.get('/image/:filename/comment') - получить комменты по имени фотографии
 - app.post('/image/:filename/comment') - запостить коммент по имени фотографии (поле 'comment')
 - app.delete('/comment/:id') - удалить коммент по Id;
 - app.put('/comment/:id') - редактировать коммент по Id (поле 'newcomment')
 
-##### Very new routes (likes)
 - app.post('/image/:filename/like') - поставить лайк
 - app.delete('/image/:filename/like') - убрать лайк
 - app.get('/getalllikes') - получить общий список лайков
 - app.get('/image/:filename/like') - получить список лайков по фотографии
+
+##### New routes (friendship)
+- app.get('/friends') - получить список друзей залогиненного пользователя (возможные статусы - Pending, Accepted, Requested)
+- app.post('/friends') - предложить или подтвердить дружбу (поле 'reqUser' с ID пользователя)
+- app.delete('/friends') - удалить дружбу (поле 'reqUser' с ID пользователя)
